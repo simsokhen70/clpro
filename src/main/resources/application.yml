@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: clpro
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://47.237.2.156:5433/postgres
+    username: sokhen
+    password: 123
+  data:
+    mongodb:
+      #      uri: mongodb+srv://renrithysak095:d5aSIfpozc5LrNCL@b2b-api.dbhrict.mongodb.net/?retryWrites=true&w=majority&appName=b2b-api
+      uri: mongodb+srv://simsokhen70:Sokhen1645@cluster0.zhpdpwr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      #      database: b2b_api
+      database: testing_clpro
+      auto-index-creation: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true

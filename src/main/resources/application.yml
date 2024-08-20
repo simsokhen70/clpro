@@ -1,4 +1,26 @@
 spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: gosellingproject@gmail.com
+    password: mmlrtnqtokjctfgx
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          from: contact@email.com
+      from:
+        name: B2B
   application:
     name: clpro
   datasource:
@@ -10,10 +32,26 @@ spring:
     mongodb:
       #      uri: mongodb+srv://renrithysak095:d5aSIfpozc5LrNCL@b2b-api.dbhrict.mongodb.net/?retryWrites=true&w=majority&appName=b2b-api
       uri: mongodb+srv://simsokhen70:Sokhen1645@cluster0.zhpdpwr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-      #      database: b2b_api
-      database: testing_clpro
+      database: clpro
       auto-index-creation: true
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+      enabled: true
+      file-size-threshold: 2KB
+jwt:
+  secret: d63f57c8c96f0f9a246e3c3d8f6a37c28512c88e04f1a27f85a22f22de34c79f
+  refresh-token: 604800
+file:
+  uploadPath: D:\api-web-ms\clpro\src\main\resources\files
+file-upload:
+  server-path: /home/was/bizweb_api/files
+  client-path: /files/**
+  base-uri: http://localhost:8080
+
+
+#  jpa:
+#    hibernate:
+#      ddl-auto: create-drop
+#    show-sql: true

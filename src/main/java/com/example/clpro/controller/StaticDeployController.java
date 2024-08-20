@@ -1,6 +1,7 @@
 package com.example.clpro.controller;
 
 import com.example.clpro.service.interfaces.StaticDeployService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -8,8 +9,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("api/v1/web")
 @CrossOrigin
+//@SecurityRequirement(name = "bearerAuth")
 public class StaticDeployController {
 
     private final StaticDeployService htmlDepService;

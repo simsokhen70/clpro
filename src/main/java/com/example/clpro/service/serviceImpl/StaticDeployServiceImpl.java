@@ -40,6 +40,7 @@ public class StaticDeployServiceImpl implements StaticDeployService {
                 }
 
                 String createDockerfileCommand;
+                String createNginxConf = "";
                 if ("nextjs".equalsIgnoreCase(projectType)) {
                     createDockerfileCommand = String.format("cd %s/%s && echo \"%s\" > Dockerfile", parentDirectory, repoName,
                             "FROM node:18-alpine as builder\n\n" +
@@ -50,6 +51,36 @@ public class StaticDeployServiceImpl implements StaticDeployService {
                                     "RUN npm run build\n\n" +
                                     "EXPOSE 3000\n\n" +
                                     "CMD [\"npm\", \"start\"]".replace("\n", "\\n"));
+                } else if("reactjs".equalsIgnoreCase(projectType)) {
+                    createNginxConf = String.format("cd %s/%s && echo \"%s\" > nginx.conf", parentDirectory, repoName,
+                            "server {\n\n" +
+                                    "listen 80;\n\n" +
+                                    "server_name localhost;\n\n" +
+                                    "location / {\n\n" +
+                                    "root /usr/share/nginx/html;\n\n" +
+                                    "index index.html index.html;\n\n" +
+                                    "try_files $uri /index.html;\n\n" +
+                                    "}\n\n" +
+                                    "error_page 500 502 503 504 /50x.html;\n\n" +
+                                    "location = /50x.html {\n\n" +
+                                    "root /usr/share/nginx/html;\n\n" +
+                                    "}\n\n" +
+                                    "}".replace("\n", "\\n"));
+
+                    createDockerfileCommand = String.format("cd %s/%s && echo \"%s\" > Dockerfile", parentDirectory, repoName,
+                            "FROM node:14-alpine as build\n\n" +
+                                    "WORKDIR /app\n\n" +
+                                    "RUN ln -sf /usr/share/zoneinfo/Asia/Bangkok /etc/localtime\n\n" +
+                                    "COPY package*.json ./\n\n" +
+                                    "RUN npm -f install\n\n" +
+                                    "COPY . .\n\n" +
+                                    "RUN npm run build\n\n" +
+                                    "FROM nginx:alpine\n\n" +
+                                    "COPY nginx.conf /etc/nginx/conf.d/default.conf\n\n" +
+                                    "COPY --from=build /app/build /usr/share/nginx/html\n\n" +
+                                    "EXPOSE 80\n\n" +
+                                    "CMD [\"nginx\", \"-g\", \"daemon off\"]".replace("\n", "\\n"));
+
                 } else { // default to static
                     createDockerfileCommand = String.format("cd %s/%s && echo \"%s\" > Dockerfile", parentDirectory, repoName,
                             "# Use an official Nginx runtime as a base image\n" +
@@ -71,10 +102,18 @@ public class StaticDeployServiceImpl implements StaticDeployService {
                 // Execute git clone command
                 SSHUtil.executeCommand(response, gitCloneCommand, emitter);
 
+                if ("reactjs".equalsIgnoreCase(projectType)) {
+                    if ("success".equals(response.get("status"))) {
+                        SSHUtil.executeCommand(response, createNginxConf, emitter);
+                    }
+                }
+
                 // Execute create Dockerfile command after git clone completes
                 if ("success".equals(response.get("status"))) {
                     SSHUtil.executeCommand(response, createDockerfileCommand, emitter);
                 }
+
+
 
                 // Execute Docker build command after create Dockerfile completes
                 if ("success".equals(response.get("status"))) {
@@ -130,7 +169,7 @@ public class StaticDeployServiceImpl implements StaticDeployService {
                     // Step 2: Create Nginx configuration file
                     String configFileName = getRandomString(6);
                     String configContent = String.format("server {\n" +
-                            "    listen 80;\n" +
+//                            "    listen 80;\n" +
                             "    server_name %s www.%s;\n" +
                             "    location / {\n" +
                             "        proxy_pass http://0.0.0.0:%s;\n" +
@@ -191,7 +230,6 @@ public class StaticDeployServiceImpl implements StaticDeployService {
                 } else {
                     emitter.send("Error creating DNS record: " + response.getBody());
                 }
-
                 emitter.complete();
             } catch (Exception e) {
                 try {
